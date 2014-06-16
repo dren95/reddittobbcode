@@ -87,6 +87,9 @@ def main():
         try:
             comment = comments.next()
             comment_stack.append(comments)
+            if type(comment) == praw.objects.MoreComments:
+                comment_stack.append(iter(comment.comments()))
+                continue
             
             #####  do stuff ######
             space_char = ' ' if args.spaces else '&nbsp;'
