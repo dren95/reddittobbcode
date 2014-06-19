@@ -4,9 +4,12 @@ import socket
 import re
 import argparse
 import HTMLParser
+import string
 
 import praw
 import requests
+
+LINELEN = 80
  
 def markdown_to_bbcode(s):
     links = {}
@@ -101,8 +104,26 @@ def main():
                 author_line += 's'
             print author_line
             comment_text = html.unescape(markdown_to_bbcode(comment.body))
+            buf = ''
+            templinelen = LINELEN - 4 * depth
             for line in comment_text.splitlines():
+                while len(line) > templinelen:
+                    idx = line.rfind(' ', 0, templinelen)
+                    if idx != -1:
+                        print '%s%s' % (prepend, line[:idx])
+                        line = line[idx+1:]
+                    else:
+                        # find the next space
+                        idx = line.find(' ', templinelen)
+                        if idx != -1:
+                            print '%s%s' % (prepend, line[:idx])
+                            line = line[idx+1:]
+                        else:
+                            # give up and print whole line
+                            print '%s%s' % (prepend, line)
+                            line = ''
                 print '%s%s' % (prepend, line)
+
             if len(comment.replies) > 0:
                 comment_stack.append(iter(comment.replies))
             print prepend
